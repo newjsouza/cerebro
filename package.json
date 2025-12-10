@@ -1,0 +1,21 @@
+{
+  "name": "apex-sports-analytics",
+  "version": "2.1.0",
+  "description": "CÉREBRO APEX-ML v2.1 - Sports Analytics with Perplexity AI",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "keywords": ["sports", "analytics", "perplexity", "ai"],
+  "author": "Johnathan",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "vercel": "^33.0.0"
+  }
+}
