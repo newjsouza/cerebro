@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CÉREBRO APEX-ML v2.1 | API OPTIMIZED</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #050505;
+            --panel-bg: #0a0a0a;
+            --border-color: #1a1a1a;
+            --primary-color: #00ff41;
+            --secondary-color: #008f11;
+            --alert-color: #ff003c;
+            --warning-color: #ffcc00;
+            --success-color: #00ff41;
+            --text-color: #e0e0e0;
+            --dim-text: #666;
+            --font-main: 'Share Tech Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* HEADER */
+        header {
+            border-bottom: 2px solid var(--secondary-color);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(90deg, #001100 0%, #000 100%);
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.1);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            text-shadow: 0 0 5px var(--secondary-color);
+        }
+
+        .status-badge {
+            font-size: 0.8rem;
+            padding: 0.2rem 0.5rem;
+            border: 1px solid var(--secondary-color);
+            color: var(--primary-color);
+        }
+
+        /* MAIN LAYOUT */
+        main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 300px 1fr 400px;
+            gap: 1px;
+            background-color: var(--border-color);
+            overflow: hidden;
+        }
+
+        @media (max-width: 1400px) {
+            main {
+                grid-template-columns: 280px 1fr;
+            }
+
+            .panel:nth-child(3) {
+                display: none;
+            }
+        }
+
+        @media (max-width: 900px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+
+            .panel {
+                max-height: 400px;
+                min-height: 250px;
+            }
+        }
+
+        .panel {
+            background-color: var(--panel-bg);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .panel-header {
+            color: var(--secondary-color);
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* STATS PANEL */
+        .stat-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-label {
+            color: var(--dim-text);
+            font-size: 0.8rem;
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .stat-value.negative {
+            color: var(--alert-color);
+        }
+
+        .stat-value.positive {
+            color: var(--primary-color);
+        }
+
+        #gatekeeper-status {
+            font-weight: bold;
+            text-align: center;
+            padding: 0.5rem;
+            margin-top: 1rem;
+            border: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+
+        .status-active {
+            color: var(--primary-color);
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 5px var(--secondary-color);
+        }
+
+        .status-blocked {
+            color: var(--alert-color);
+            border-color: var(--alert-color) !important;
+            box-shadow: 0 0 5px var(--alert-color);
+        }
+
+        /* INPUT GROUPS */
+        .input-group {
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            background: #000;
+            border: 1px solid var(--border-color);
+            color: var(--primary-color);
+            padding: 0.8rem;
+            font-family: var(--font-main);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+            margin-bottom: 0.3rem;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 5px rgba(0, 255, 65, 0.2);
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='%2300ff41' d='M4.5 6.5L8 10l3.5-3.5'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.5rem center;
+            background-size: 1.5em 1.5em;
+            padding-right: 2rem;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            font-family: var(--font-main);
+            font-size: 1rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            margin-top: 0.5rem;
+            font-weight: bold;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-process {
+            background-color: #003300;
+            color: var(--primary-color);
+            border: 1px solid var(--secondary-color);
+        }
+
+        .btn-process:hover:not(:disabled) {
+            background-color: #004400;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
+        }
+
+        .btn-process:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-refresh {
+            background-color: #003300;
+            color: var(--primary-color);
+            border: 1px solid var(--secondary-color);
+            padding: 0.8rem 1.5rem;
+            font-size: 0.9rem;
+            width: auto;
+        }
+
+        .btn-refresh:hover:not(:disabled) {
+            background-color: #004400;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
+        }
+
+        .btn-refresh:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-apply {
+            background-color: #003300;
+            color: var(--primary-color);
+            border: 1px solid var(--secondary-color);
+            padding: 0.8rem;
+            font-size: 0.9rem;
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+
+        .btn-apply:hover:not(:disabled) {
+            background-color: #004400;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
+        }
+
+        .btn-apply:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-reset {
+            background-color: transparent;
+            color: var(--warning-color);
+            border: 1px solid var(--warning-color);
+            padding: 0.3rem 0.6rem;
+            font-size: 0.7rem;
+            width: auto;
+        }
+
+        .btn-reset:hover {
+            background-color: var(--warning-color);
+            color: #000;
+        }
+
+        .btn-export {
+            background: transparent;
+            border: 1px solid var(--dim-text);
+            color: var(--dim-text);
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+            width: auto;
+        }
+
+        .btn-export:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        #operation-feedback {
+            margin-top: 1rem;
+            padding: 1rem;
+            border: 1px solid transparent;
+            display: none;
+            border-radius: 2px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .feedback-success {
+            border-color: var(--primary-color);
+            background: rgba(0, 255, 65, 0.05);
+        }
+
+        .feedback-error {
+            border-color: var(--alert-color);
+            background: rgba(255, 0, 60, 0.05);
+        }
+
+        .feedback-warning {
+            border-color: var(--warning-color);
+            background: rgba(255, 204, 0, 0.05);
+        }
+
+        /* ANALYSIS PANEL */
+        #analysis-panel {
+            display: none;
+            min-height: 300px;
+        }
+
+        .analysis-section {
+            margin-bottom: 1.5rem;
+            border-left: 3px solid var(--secondary-color);
+            padding-left: 1rem;
+        }
+
+        .analysis-title {
+            color: var(--primary-color);
+            font-size: 1.1rem;
+            margin-bottom: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .analysis-content {
+            color: var(--text-color);
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .market-option {
+            background: rgba(0, 255, 65, 0.03);
+            border: 1px solid var(--secondary-color);
+            padding: 0.8rem;
+            margin-bottom: 0.5rem;
+            border-radius: 2px;
+        }
+
+        .market-name {
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-bottom: 0.3rem;
+        }
+
+        .market-details {
+            color: var(--dim-text);
+            font-size: 0.9rem;
+        }
+
+        .ev-indicator {
+            display: inline-block;
+            padding: 0.3rem 0.6rem;
+            border-radius: 2px;
+            font-size: 0.85rem;
+            margin-top: 0.3rem;
+        }
+
+        .ev-positive {
+            background: rgba(0, 255, 65, 0.2);
+            color: var(--primary-color);
+        }
+
+        .ev-negative {
+            background: rgba(255, 0, 60, 0.2);
+            color: var(--alert-color);
+        }
+
+        /* LOGS PANEL */
+        #log-container {
+            flex: 1;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px dashed #333;
+        }
+
+        .log-time {
+            color: var(--dim-text);
+            margin-right: 0.5rem;
+        }
+
+        .log-sys {
+            color: var(--warning-color);
+        }
+
+        .log-success {
+            color: var(--primary-color);
+        }
+
+        .log-error {
+            color: var(--alert-color);
+        }
+
+        .log-api {
+            color: var(--secondary-color);
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+            color: var(--dim-text);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .api-config {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #000;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-color);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid var(--secondary-color);
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .small-text {
+            font-size: 0.8rem;
+            color: var(--dim-text);
+        }
+
+        .divider {
+            border-top: 1px dashed var(--border-color);
+            margin: 1rem 0;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+            width: 100%;
+        }
+
+        .button-group>button {
+            flex: 1;
+        }
+
+        .stat-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div>
+            <h1>CÉREBRO APEX-ML <span style="font-size:0.8em; color:var(--dim-text)">v2.1 API OPT</span></h1>
+            <span class="small-text">Sistema Inteligente de Análise e Apostas Esportivas</span>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <div class="status-badge" id="api-status" style="border-color:var(--dim-text); color:var(--dim-text)">API
+                OFFLINE</div>
+            <div class="status-badge" id="system-status">SYSTEM ONLINE</div>
+            <div class="status-badge" id="data-status" style="border-color:var(--dim-text); color:var(--dim-text)">
+                MATCHES: 0</div>
+        </div>
+    </header>
+
+    <main>
+        <!-- PANEL 1: STATUS & CONFIG -->
+        <div class="panel" id="panel-status">
+            <div class="panel-header">
+                <span>Estado Financeiro</span>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div>
+                        <span class="stat-label">BANCA TOTAL</span>
+                        <span class="stat-value" id="display-bankroll">R$ 0,00</span>
+                    </div>
+                    <button class="btn btn-reset" onclick="app.resetBankroll()">RESET</button>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <span class="stat-label">PNL DIÁRIO</span>
+                <span class="stat-value" id="display-daily-pnl">R$ 0,00</span>
+                <span class="stat-label" style="margin-top:0.5rem">LIMITE STOP-LOSS: <span id="display-stoploss-limit"
+                        style="color:var(--alert-color)">...</span></span>
+            </div>
+
+            <div class="stat-card">
+                <span class="stat-label">EXP. DIÁRIA ATUAL</span>
+                <span class="stat-value" id="display-daily-exposure">0%</span>
+                <span class="stat-label">TETO: 10%</span>
+            </div>
+
+            <div id="gatekeeper-status" class="status-active">
+                GATEKEEPER ATIVO<br>
+                <span style="font-size:0.7em; font-weight:normal;">MONITORANDO RISCO</span>
+            </div>
+
+            <div style="margin-top: auto; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                <label>Configurar Banca Inicial</label>
+                <div class="button-group">
+                    <input type="number" id="config-initial-bankroll" placeholder="Ex: 5000" style="flex: 1;">
+                    <button class="btn btn-process" onclick="app.setBankroll()"
+                        style="width: auto; padding: 0.8rem;">SET</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANEL 2: OPERATIONS & ANALYSIS -->
+        <div class="panel" id="panel-ops">
+            <div class="panel-header">Console de Operações</div>
+
+            <!-- API REFRESH SECTION -->
+            <div class="input-group" style="border-bottom: 1px dashed var(--border-color); padding-bottom: 1rem;">
+                <label>Obter Próximas Partidas (24h)</label>
+                <button class="btn btn-refresh" id="btn-refresh-matches" onclick="app.fetchMatchesFromAPI()">
+                    <span id="btn-refresh-icon">↻</span> ATUALIZAR DADOS
+                </button>
+                <small class="small-text" style="margin-top: 0.5rem; display: block;">Busca partidas das próximas 24
+                    horas em todas as ligas principais</small>
+            </div>
+
+            <!-- MATCH SELECTOR -->
+            <div class="input-group">
+                <label>Selecionar Partida</label>
+                <select id="match-selector" onchange="app.enableApplyButton()">
+                    <option value="">-- Clique em ATUALIZAR para carregar partidas --</option>
+                </select>
+                <small class="small-text">Matches organizadas por liga</small>
+
+                <button class="btn btn-apply" id="btn-apply-match" onclick="app.loadMatchAnalysis()" disabled>
+                    <span id="btn-apply-icon"></span> APLICAR
+                </button>
+            </div>
+
+            <!-- ANALYSIS PANEL (HIDDEN UNTIL MATCH SELECTED & APPLIED) -->
+            <div id="analysis-panel">
+                <div class="divider"></div>
+
+                <!-- TEAMS & FORM -->
+                <div class="analysis-section">
+                    <div class="analysis-title">Contexto do Jogo</div>
+                    <div class="analysis-content" id="match-context">
+                        <!-- Dinâmico -->
+                    </div>
+                </div>
+
+                <!-- TACTICAL ANALYSIS -->
+                <div class="analysis-section">
+                    <div class="analysis-title">Análise Tática</div>
+                    <div class="analysis-content" id="tactical-analysis">
+                        <!-- Dinâmico -->
+                    </div>
+                </div>
+
+                <!-- MARKET RECOMMENDATIONS -->
+                <div class="analysis-section">
+                    <div class="analysis-title">Mercados Recomendados (APEX)</div>
+                    <div id="market-recommendations">
+                        <!-- Dinâmico -->
+                    </div>
+                </div>
+
+                <!-- ADDITIONAL INFO -->
+                <div class="analysis-section">
+                    <div class="analysis-title">Informações Adicionais</div>
+                    <div class="analysis-content" id="additional-info">
+                        <!-- Dinâmico -->
+                    </div>
+                </div>
+            </div>
+
+            <div id="no-matches-message" style="color: var(--dim-text); text-align: center; margin-top: 2rem;">
+                <p>Nenhuma partida carregada.</p>
+                <p style="font-size: 0.9rem;">1. Clique em "ATUALIZAR DADOS" para buscar partidas</p>
+                <p style="font-size: 0.9rem;">2. Selecione uma partida no dropdown</p>
+                <p style="font-size: 0.9rem;">3. Clique em "APLICAR" para obter análise detalhada</p>
+            </div>
+        </div>
+
+        <!-- PANEL 3: LOGS -->
+        <div class="panel" id="panel-logs">
+            <div class="panel-header">System Logs</div>
+            <div id="log-container">
+                <!-- Logs dinamicamente -->
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <span id="footer-version">APEX RISK ENGINE v3.1 + API OPTIMIZED</span>
+        <div class="api-config">
+            <input type="password" id="api-key-input" placeholder="Chave API Perplexity"
+                style="width: 200px; padding: 0.4rem; font-size: 0.8rem;">
+            <button class="btn-export" onclick="app.connectAPI()" style="width: auto;">[ CONECTAR ]</button>
+            <span style="color:var(--border-color)">|</span>
+            <input type="file" id="import-file" style="display:none" accept=".json" onchange="app.importData(this)">
+            <button class="btn-export" onclick="document.getElementById('import-file').click()" style="width: auto;">[
+                UPLOAD ]</button>
+            <button class="btn-export" onclick="app.exportData()" style="width: auto;">[ DOWNLOAD ]</button>
+        </div>
+    </footer>
+
+    <!-- SCRIPTS -->
+    <script>
+        /**
+         * CÉREBRO APEX-ML v2.1
+         * API Optimization: Fetch matches on demand, analysis on click
+         */
+
+        const formatCurrency = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+        const now = () => new Date().toISOString();
+        const getTodayDateStr = () => new Date().toISOString().split('T')[0];
+
+        // ========== INDEXEDDB MANAGER ==========
+        class IDBManager {
+            constructor() {
+                this.dbName = 'ApexDB';
+                this.version = 3; // FORCED UPDATE TO 3 TO PREVENT VERSION ERRORS
+                this.db = null;
+            }
+
+            async init() {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open(this.dbName, this.version);
+
+                    request.onupgradeneeded = (event) => {
+                        const db = event.target.result;
+                        if (!db.objectStoreNames.contains('config')) db.createObjectStore('config', { keyPath: 'key' });
+                        if (!db.objectStoreNames.contains('bets')) db.createObjectStore('bets', { keyPath: 'id', autoIncrement: true });
+                        if (!db.objectStoreNames.contains('logs')) db.createObjectStore('logs', { keyPath: 'id', autoIncrement: true });
+                        if (!db.objectStoreNames.contains('matches')) db.createObjectStore('matches', { keyPath: 'id', autoIncrement: true });
+                    };
+
+                    request.onsuccess = (event) => {
+                        this.db = event.target.result;
+                        resolve(this.db);
+                    };
+
+                    request.onerror = (event) => reject(event.target.error);
+                });
+            }
+
+            async getConfig(key) {
+                return this._transaction('config', 'readonly', store => store.get(key));
+            }
+
+            async setConfig(key, value) {
+                return this._transaction('config', 'readwrite', store => store.put({ key, value }));
+            }
+
+            async addBet(bet) {
+                return this._transaction('bets', 'readwrite', store => store.put(bet));
+            }
+
+            async getAllBets() {
+                return this._transaction('bets', 'readonly', store => store.getAll());
+            }
+
+            async addLog(message, type = 'info') {
+                const log = { timestamp: now(), message, type };
+                return this._transaction('logs', 'readwrite', store => store.add(log));
+            }
+
+            async saveMatches(matches) {
+                await this._transaction('matches', 'readwrite', store => store.clear());
+                for (const match of matches) {
+                    await this._transaction('matches', 'readwrite', store => store.put(match));
+                }
+            }
+
+            async getAllMatches() {
+                return this._transaction('matches', 'readonly', store => store.getAll());
+            }
+
+            _transaction(storeName, mode, callback) {
+                return new Promise((resolve, reject) => {
+                    const tx = this.db.transaction(storeName, mode);
+                    const store = tx.objectStore(storeName);
+                    const request = callback(store);
+
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            }
+        }
+
+        // ========== APEX RISK ENGINE ==========
+        class ApexRiskEngine {
+            constructor() {
+                this.STOP_LOSS_PCT = 0.12;
+                this.MAX_STAKE_PCT = 0.05;
+                this.SAFE_STAKE_PCT = 0.02;
+                this.MIN_ODD = 1.40;
+            }
+
+            calculateEV(probPct, odd) {
+                const p = probPct / 100;
+                const ev = (p * odd) - 1;
+                return ev;
+            }
+
+            calculateKelly(probPct, odd) {
+                const p = probPct / 100;
+                const b = odd - 1;
+                const q = 1 - p;
+
+                if (b <= 0) return 0;
+
+                const fullKelly = ((b * p) - q) / b;
+                const fractionalKelly = fullKelly * 0.25;
+
+                return Math.max(0, fractionalKelly);
+            }
+
+            validate(betContext) {
+                const violations = [];
+                const { stake, bankroll, dailyPnL, odd } = betContext;
+
+                const lossLimit = bankroll.startOfDay * this.STOP_LOSS_PCT;
+                if (dailyPnL <= -lossLimit) {
+                    violations.push(`STOP LOSS ATINGIDO! Perda diária > ${this.STOP_LOSS_PCT * 100}% da banca inicial.`);
+                }
+
+                const stakePct = stake / bankroll.current;
+                if (stakePct > this.MAX_STAKE_PCT) {
+                    violations.push(`STAKE VIOLATION: ${stakePct.toFixed(2)}% excede o limite hard de ${this.MAX_STAKE_PCT * 100}%`);
+                }
+
+                if (odd < this.MIN_ODD) {
+                    violations.push(`LIQUIDITY: Odd ${odd} abaixo do mínimo permitido (${this.MIN_ODD})`);
+                }
+
+                return {
+                    approved: violations.length === 0,
+                    violations
+                };
+            }
+        }
+
+        // ========== UI CONTROLLER ==========
+        class UIController {
+            constructor(db, riskEngine) {
+                this.db = db;
+                this.re = riskEngine;
+
+                this.state = {
+                    bankroll: 0,
+                    startOfDayBankroll: 0,
+                    dailyPnL: 0,
+                    dailyExposure: 0,
+                    apiConnected: false,
+                    matches: []
+                };
+            }
+
+            async loadState() {
+                const storedBankroll = await this.db.getConfig('currentBankroll');
+                const storedStartBank = await this.db.getConfig('startDayBankroll');
+                const lastDate = await this.db.getConfig('lastLoginDate');
+                const apiKey = await this.db.getConfig('apiKey');
+
+                const today = getTodayDateStr();
+
+                if (storedBankroll) {
+                    this.state.bankroll = storedBankroll.value;
+                }
+
+                if (!lastDate || lastDate.value !== today) {
+                    this.state.startOfDayBankroll = this.state.bankroll;
+                    this.state.dailyPnL = 0;
+                    this.state.dailyExposure = 0;
+                    await this.db.setConfig('lastLoginDate', today);
+                    await this.db.setConfig('startDayBankroll', this.state.bankroll);
+                } else {
+                    this.state.startOfDayBankroll = storedStartBank ? storedStartBank.value : this.state.bankroll;
+                }
+
+                if (apiKey && apiKey.value) {
+                    this.setAPIStatus(true);
+                    document.getElementById('api-key-input').value = apiKey.value;
+                }
+
+                this.updateUI();
+                this.log("Sistema Carregado. Pronto para operações.", "sys");
+            }
+
+            updateUI() {
+                document.getElementById('display-bankroll').innerText = formatCurrency(this.state.bankroll);
+                document.getElementById('display-daily-pnl').innerText = formatCurrency(this.state.dailyPnL);
+
+                const slVal = this.state.startOfDayBankroll * this.re.STOP_LOSS_PCT;
+                document.getElementById('display-stoploss-limit').innerText = `-${formatCurrency(slVal)}`;
+
+                this.checkGatekeeper();
+            }
+
+            checkGatekeeper() {
+                const gk = document.getElementById('gatekeeper-status');
+                const lossLimit = this.state.startOfDayBankroll * this.re.STOP_LOSS_PCT;
+
+                if (this.state.dailyPnL <= -lossLimit) {
+                    gk.className = 'status-blocked';
+                    gk.innerHTML = "BLOQUEIO TOTAL<br><span style='font-size:0.7em'>STOP LOSS ATINGIDO</span>";
+                    return false;
+                } else {
+                    gk.className = 'status-active';
+                    gk.innerHTML = "GATEKEEPER ATIVO<br><span style='font-size:0.7em'>MONITORANDO RISCO</span>";
+                    return true;
+                }
+            }
+
+            setAPIStatus(connected) {
+                this.state.apiConnected = connected;
+                const badge = document.getElementById('api-status');
+                if (connected) {
+                    badge.innerText = 'API ONLINE';
+                    badge.style.borderColor = 'var(--primary-color)';
+                    badge.style.color = 'var(--primary-color)';
+                } else {
+                    badge.innerText = 'API OFFLINE';
+                    badge.style.borderColor = 'var(--dim-text)';
+                    badge.style.color = 'var(--dim-text)';
+                }
+            }
+
+            updateDataStatus(count) {
+                document.getElementById('data-status').innerText = `MATCHES: ${count}`;
+            }
+
+            log(msg, type = 'info') {
+                const container = document.getElementById('log-container');
+                const time = new Date().toLocaleTimeString();
+
+                let colorClass = '';
+                if (type === 'sys') colorClass = 'log-sys';
+                if (type === 'success') colorClass = 'log-success';
+                if (type === 'error') colorClass = 'log-error';
+                if (type === 'api') colorClass = 'log-api';
+
+                const html = `<div class="log-entry ${colorClass}">
+                    <span class="log-time">[${time}]</span> ${msg}
+                </div>`;
+
+                container.insertAdjacentHTML('afterbegin', html);
+                this.db.addLog(msg, type);
+            }
+
+            hideAnalysisPanel() {
+                document.getElementById('analysis-panel').style.display = 'none';
+                document.getElementById('no-matches-message').style.display = 'block';
+            }
+
+            showAnalysisPanel() {
+                document.getElementById('analysis-panel').style.display = 'block';
+                document.getElementById('no-matches-message').style.display = 'none';
+            }
+
+            setButtonLoading(buttonId, isLoading) {
+                const btn = document.getElementById(buttonId);
+                if (isLoading) {
+                    btn.disabled = true;
+                    if (buttonId === 'btn-refresh-matches') {
+                        document.getElementById('btn-refresh-icon').innerHTML = '<span class="loading-spinner"></span>';
+                    } else if (buttonId === 'btn-apply-match') {
+                        document.getElementById('btn-apply-icon').innerHTML = '<span class="loading-spinner"></span>';
+                    }
+                } else {
+                    btn.disabled = false;
+                    if (buttonId === 'btn-refresh-matches') {
+                        document.getElementById('btn-refresh-icon').innerHTML = '↻';
+                    } else if (buttonId === 'btn-apply-match') {
+                        document.getElementById('btn-apply-icon').innerHTML = '';
+                    }
+                }
+            }
+        }
+
+        // ========== MAIN APP ==========
+        class App {
+            constructor() {
+                this.db = new IDBManager();
+                this.riskEngine = new ApexRiskEngine();
+                this.ui = null;
+                this.selectedMatch = null;
+            }
+
+            async init() {
+                await this.db.init();
+                this.ui = new UIController(this.db, this.riskEngine);
+                await this.ui.loadState();
+            }
+
+            async setBankroll() {
+                const input = document.getElementById('config-initial-bankroll');
+                const val = parseFloat(input.value);
+                if (val && val > 0) {
+                    this.ui.state.bankroll = val;
+                    this.ui.state.startOfDayBankroll = val;
+                    await this.db.setConfig('currentBankroll', val);
+                    await this.db.setConfig('startDayBankroll', val);
+                    this.ui.updateUI();
+                    this.ui.log(`Banca inicial configurada para ${formatCurrency(val)}`, 'sys');
+                    input.value = '';
+                }
+            }
+
+            async resetBankroll() {
+                if (confirm('Deseja realmente resetar a banca inicial?')) {
+                    await this.db.setConfig('currentBankroll', 0);
+                    await this.db.setConfig('startDayBankroll', 0);
+                    this.ui.state.bankroll = 0;
+                    this.ui.state.startOfDayBankroll = 0;
+                    this.ui.updateUI();
+                    this.ui.log('Banca resetada.', 'sys');
+                }
+            }
+
+            async connectAPI() {
+                const keyInput = document.getElementById('api-key-input');
+                const key = keyInput.value.trim();
+
+                if (!key) {
+                    this.ui.log("Erro: Chave API vazia.", "error");
+                    this.ui.setAPIStatus(false);
+                    return;
+                }
+
+                this.ui.log("Validando chave API Perplexity...", "sys");
+
+                try {
+                    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${key}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            model: 'pplx-70b-online',
+                            messages: [{ role: 'user', content: 'test' }],
+                            max_tokens: 10
+                        })
+                    });
+
+                    if (response.ok || response.status === 429) {
+                        await this.db.setConfig('apiKey', key);
+                        this.ui.setAPIStatus(true);
+                        this.ui.log("API Conectada com Sucesso!", "success");
+                        document.getElementById('btn-refresh-matches').disabled = false;
+                    } else {
+                        throw new Error('Chave inválida');
+                    }
+                } catch (e) {
+                    this.ui.log(`Erro na validação: ${e.message}`, "error");
+                    this.ui.setAPIStatus(false);
+                }
+            }
+
+            async fetchMatchesFromAPI() {
+                if (!this.ui.state.apiConnected) {
+                    this.ui.log("API não conectada. Insira a chave e clique em CONECTAR.", "error");
+                    return;
+                }
+
+                this.ui.setButtonLoading('btn-refresh-matches', true);
+                this.ui.log("Consultando API para próximas partidas...", "api");
+
+                try {
+                    const apiKey = (await this.db.getConfig('apiKey')).value;
+
+                    const prompt = `
+Você é um analista de dados esportivos. Extraia as próximas partidas de futebol das PRÓXIMAS 24 HORAS de todas as principais ligas (Brasileirão, Premier League, La Liga, Serie A, Bundesliga, Ligue 1, Champions League, Europa League).
+
+Para cada partida, forneça EXATAMENTE neste formato JSON (sem markdown, sem backticks):
+[
+  {
+    "id": "unique_id_1",
+    "league": "Brasileirão",
+    "date": "2025-12-10",
+    "time": "19:00",
+    "team1": "Flamengo",
+    "team2": "Vasco",
+    "status": "scheduled"
+  },
+  ...
+]
+
+Inclua pelo menos 15 partidas de diferentes ligas. Use dados atuais do calendário 2025.
+`;
+
+                    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${apiKey}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            model: 'pplx-70b-online',
+                            messages: [{ role: 'user', content: prompt }],
+                            max_tokens: 2000
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.error?.message || 'Erro na API');
+                    }
+
+                    const content = data.choices[0].message.content;
+                    const jsonMatch = content.match(/\[[\s\S]*\]/);
+
+                    if (!jsonMatch) {
+                        throw new Error('Formato inválido na resposta');
+                    }
+
+                    const matches = JSON.parse(jsonMatch[0]);
+
+                    await this.db.saveMatches(matches);
+                    this.ui.state.matches = matches;
+
+                    this.populateMatchSelector(matches);
+
+                    this.ui.log(`${matches.length} partidas carregadas com sucesso!`, "success");
+                    this.ui.updateDataStatus(matches.length);
+
+                } catch (e) {
+                    this.ui.log(`Erro ao buscar partidas: ${e.message}`, "error");
+                    this.ui.state.matches = [];
+                } finally {
+                    this.ui.setButtonLoading('btn-refresh-matches', false);
+                }
+            }
+
+            populateMatchSelector(matches) {
+                const selector = document.getElementById('match-selector');
+                selector.innerHTML = '<option value="">-- Selecione uma Partida --</option>';
+
+                const byLeague = {};
+                matches.forEach(m => {
+                    if (!byLeague[m.league]) byLeague[m.league] = [];
+                    byLeague[m.league].push(m);
+                });
+
+                Object.entries(byLeague).sort().forEach(([league, leagueMatches]) => {
+                    const optgroup = document.createElement('optgroup');
+                    optgroup.label = league;
+
+                    leagueMatches.forEach(match => {
+                        const option = document.createElement('option');
+                        option.value = match.id;
+                        option.innerText = `${match.team1} vs ${match.team2} (${match.date} ${match.time})`;
+                        option.dataset.matchData = JSON.stringify(match);
+                        optgroup.appendChild(option);
+                    });
+
+                    selector.appendChild(optgroup);
+                });
+            }
+
+            enableApplyButton() {
+                const selector = document.getElementById('match-selector');
+                const btn = document.getElementById('btn-apply-match');
+                btn.disabled = !selector.value;
+            }
+
+            async loadMatchAnalysis() {
+                const selector = document.getElementById('match-selector');
+                const selectedOption = selector.options[selector.selectedIndex];
+
+                if (!selectedOption.value) {
+                    return;
+                }
+
+                const match = JSON.parse(selectedOption.dataset.matchData);
+                this.selectedMatch = match;
+
+                this.ui.showAnalysisPanel();
+                this.ui.log(`Buscando análise detalhada para: ${match.team1} vs ${match.team2}`, "api");
+
+                this.ui.setButtonLoading('btn-apply-match', true);
+
+                await this.fetchDetailedAnalysis(match);
+
+                this.ui.setButtonLoading('btn-apply-match', false);
+            }
+
+            async fetchDetailedAnalysis(match) {
+                if (!this.ui.state.apiConnected) return;
+
+                try {
+                    const apiKey = (await this.db.getConfig('apiKey')).value;
+
+                    const analysisPrompt = `
+Você é um analista de apostas esportivas especializado em análise APEX (métodos comprovados de rentabilidade em apostas).
+
+Para o jogo: ${match.team1} vs ${match.team2} (${match.league}, ${match.date} às ${match.time})
+
+Forneça uma análise COMPLETA E DETALHADA em português seguindo EXATAMENTE este formato:
+
+**CONTEXTO DO JOGO:**
+- Últimos 5 jogos do ${match.team1}
+- Últimos 5 jogos do ${match.team2}
+- Sequência psicológica (vitórias/derrotas consecutivas)
+- Este é um clássico? Sim/Não
+- Importância do jogo (título, vaga, rebaixamento, etc)
+- Desfalques confirmados
+
+**ANÁLISE TÁTICA:**
+- Formações esperadas de ambos os times
+- Criadores de jogo principais de cada lado
+- Tendências de posse de bola
+- Laterais ofensivos confirmados disponíveis
+- Prognóstico de escanteios (média esperada)
+- Probabilidade estimada de cartões
+
+**PRÓXIMAS PARTIDAS IMPORTANTES:**
+- Próximas partidas do ${match.team1} nos próximos 7 dias (pode haver posse?)
+- Próximas partidas do ${match.team2} nos próximos 7 dias (pode haver posse?)
+
+**MERCADOS RECOMENDADOS (MÉTODO APEX):**
+Recomende 3 mercados com máximo rentabilidade esperada. FORMATO OBRIGATÓRIO:
+1. Over 2.5 Gols (odd 1.80, prob 58%, EV +4%)
+2. Over 9.5 Escanteios (odd 1.65, prob 62%, EV +3%)
+3. Resultado Exato 2-1 (odd 3.50, prob 27%, EV +0.5%)
+
+**CONFIANÇA GERAL:**
+Rating de 1-100 na análise
+
+Seja extremamente técnico, use dados reais do calendário 2025 e justifique CADA recomendação com números.
+`;
+
+                    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${apiKey}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            model: 'pplx-70b-online',
+                            messages: [{ role: 'user', content: analysisPrompt }],
+                            max_tokens: 4000
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.error?.message || 'Erro na análise');
+                    }
+
+                    const analysis = data.choices[0].message.content;
+
+                    this.displayAnalysis(match, analysis);
+                    this.ui.log('Análise detalhada carregada com sucesso!', "success");
+
+                } catch (e) {
+                    this.ui.log(`Erro ao buscar análise: ${e.message}`, "error");
+                    document.getElementById('match-context').innerHTML = `<span style="color: var(--alert-color);">Erro ao carregar análise: ${e.message}</span>`;
+                }
+            }
+
+            displayAnalysis(match, analysisText) {
+                const sections = {
+                    context: this.extractSection(analysisText, 'CONTEXTO DO JOGO'),
+                    tactical: this.extractSection(analysisText, 'ANÁLISE TÁTICA'),
+                    nextMatches: this.extractSection(analysisText, 'PRÓXIMAS PARTIDAS IMPORTANTES'),
+                    markets: this.extractSection(analysisText, 'MERCADOS RECOMENDADOS'),
+                    confidence: this.extractSection(analysisText, 'CONFIANÇA GERAL')
+                };
+
+                document.getElementById('match-context').innerHTML = `
+                    <strong>${match.team1} vs ${match.team2}</strong><br>
+                    ${match.league} | ${match.date} às ${match.time}<br><br>
+                    ${sections.context || 'Sem dados'}
+                `;
+
+                document.getElementById('tactical-analysis').innerHTML = sections.tactical || 'Sem dados';
+
+                const marketsHtml = this.parseMarketRecommendations(sections.markets);
+                document.getElementById('market-recommendations').innerHTML = marketsHtml;
+
+                const additionalHtml = `
+                    <strong>Próximas Partidas Importantes:</strong><br>
+                    ${sections.nextMatches || 'Sem dados'}<br><br>
+                    <strong>Confiança Geral:</strong><br>
+                    ${sections.confidence || 'Sem dados'}
+                `;
+                document.getElementById('additional-info').innerHTML = additionalHtml;
+            }
+
+            extractSection(text, sectionName) {
+                const regex = new RegExp(`\\*\\*${sectionName}\\*\\*[:\\n]([\\s\\S]*?)(?=\\*\\*|$)`, 'i');
+                const match = text.match(regex);
+                return match ? match[1].trim() : '';
+            }
+
+            parseMarketRecommendations(text) {
+                if (!text) return '<span style="color: var(--dim-text);">Sem mercados disponíveis</span>';
+
+                const marketPattern = /(\d+\.\s+)?([^(\n]+)\s*\(odd\s+([\d.]+),\s*prob\s+([\d.]+)%,\s*EV\s*([+-][\d.]+)%\)/gi;
+                const matches = Array.from(text.matchAll(marketPattern));
+
+                if (matches.length === 0) {
+                    return `<div class="analysis-content">${text}</div>`;
+                }
+
+                let html = '';
+                matches.slice(0, 3).forEach((m, idx) => {
+                    const [, , name, odd, prob, ev] = m;
+                    const evNum = parseFloat(ev);
+                    const evClass = evNum > 0 ? 'ev-positive' : 'ev-negative';
+
+                    html += `
+                    <div class="market-option">
+                        <div class="market-name">${idx + 1}. ${name.trim()}</div>
+                        <div class="market-details">
+                            <div>Odd: <strong>${odd}</strong> | Probabilidade: <strong>${prob}%</strong></div>
+                            <span class="ev-indicator ${evClass}">EV ${ev}%</span>
+                        </div>
+                    </div>
+                    `;
+                });
+
+                return html || `<div class="analysis-content">${text}</div>`;
+            }
+
+            async exportData() {
+                const bets = await this.db.getAllBets();
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(bets, null, 2));
+                const downloadAnchorNode = document.createElement('a');
+                downloadAnchorNode.setAttribute("href", dataStr);
+                downloadAnchorNode.setAttribute("download", "apex_history.json");
+                document.body.appendChild(downloadAnchorNode);
+                downloadAnchorNode.click();
+                downloadAnchorNode.remove();
+                this.ui.log("Dataset exportado com sucesso.", "sys");
+            }
+
+            importData(input) {
+                const file = input.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        const bets = JSON.parse(e.target.result);
+                        if (!Array.isArray(bets)) throw new Error("Formato inválido");
+
+                        let count = 0;
+                        for (const bet of bets) {
+                            if (bet.match && bet.stake) {
+                                await this.db.addBet(bet);
+                                count++;
+                            }
+                        }
+                        this.ui.log(`Importação: ${count} registros restaurados.`, "success");
+                    } catch (err) {
+                        this.ui.log(`Erro na importação: ${err.message}`, "error");
+                    }
+                    input.value = '';
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        // Initialize
+        const app = new App();
+        window.addEventListener('DOMContentLoaded', () => app.init());
+    </script>
+</body>
+
+</html>
