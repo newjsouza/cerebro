@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEREBRO APEX-ML v2.1</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+        h1 { color: #333; margin-bottom: 20px; }
+        textarea { width: 100%; height: 150px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: monospace; }
+        button { background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 10px; }
+        button:hover { background: #764ba2; }
+        .result { margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 5px; display: none; }
+        .result.show { display: block; }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CEREBRO APEX-ML v2.1</h1>
+        <textarea id="prompt" placeholder="Digite sua pergunta aqui..."></textarea>
+        <button onclick="analyze()">Analisar</button>
+        <div id="result" class="result">
+            <pre id="content"></pre>
+        </div>
+    </div>
+    <script>
+        async function analyze() {
+            const prompt = document.getElementById('prompt').value;
+            if (!prompt) { alert('Digite algo'); return; }
+            
+            const result = document.getElementById('result');
+            result.classList.add('show');
+            document.getElementById('content').textContent = 'Aguarde...';
+            
+            try {
+                const res = await fetch('/api/proxy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: 'llama-3.1-sonar-large-128k-online',
+                        messages: [{role: 'user', content: prompt}],
+                        max_tokens: 2000,
+                        temperature: 0.7
+                    })
+                });
+                const data = await res.json();
+                document.getElementById('content').textContent = data.choices[0].message.content;
+            } catch(e) {
+                document.getElementById('content').textContent = 'Erro: ' + e.message;
+            }
+        }
+    </script>
+</body>
+</html>
